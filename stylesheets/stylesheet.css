@@ -58,13 +58,30 @@ header h1 {
 }
 
 header h1:before {
-  content: "./ ";
+  content: "$./ ";
   font-size: 24px;
 }
 
 header h2 {
   font-size: 18px;
   font-weight: 300;
+  color: #666;
+}
+
+header h2:before {
+  content: "$ ";
+  font-size: 18px;
+  color: #666;
+}
+
+header h3 {
+  font-size: 16px;
+  color: #666;
+}
+
+header h3:before {
+  content: "$ ";
+  font-size: 16px;
   color: #666;
 }
 
