@@ -20,11 +20,12 @@ layout: default
     <header>
       <div class="container">
         <h1>"Mr. Nex" | grep develop > index.html</h1>
-        <h2>echo "(Mr. Nex's Developer Blog)" > ForNonHackers.txt</h3>
+        <h2>echo "(Mr. Nex's Developer Blog)" > ForNonHackers.txt</h2>
 
         <section id="downloads">
           <a href="https://github.com/MrNex" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
-        </section>
+          <a href="about.html" class="btn">About</a>
+	</section>
       </div>
     </header>
 
@@ -34,9 +35,7 @@ layout: default
 
           <h1>{{ post.title }}</h1>
 
-          <p>
             {{ post.content }}
-          </p>
 
         </section>
       {% endfor %}
