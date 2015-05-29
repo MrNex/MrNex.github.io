@@ -32,13 +32,12 @@ layout: default
       {% for post in site.posts %}
         <section id="main_content">
 
-          <h1><a id={{post.title}} class="anchor" href="{{ site.baseurl }}{{ post.url }}" aria-hidden="true">{{ post.title }}</a></h1>
+          <h1>{{ post.title }}</h1>
 
           <p>
             {{ post.excerpt }}
           </p>
 
-          <a href="{{ site.baseurl }}{{ post.url }}" class="read-more">Read More</a>
         </section>
       {% endfor %}
     </div>
