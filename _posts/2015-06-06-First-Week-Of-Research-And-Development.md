@@ -1,7 +1,6 @@
 ---
 layout: post
 title: First Week of Research & Development
-date: June 6th 2015
 ---
 
 Yesterday ended my first week at my new job. I am currently working at Rochester Institute of Technology as a researcher & developer of the pedagogical sort. I am working under PhD. David Schwartz to research the best ways to teach the modelling of physical concepts through simulation, then I must develop concise and correct standalone examples demonstrating the modelling of the concept. During this development I must be very meticulous in documenting my program, not simply for the longevity of the code or the ease of following the logic, but to explain the mathematical and physics formulas, derivations, and (sometimes) proofs which allow us to model the concept in the way I am presenting. My work is to be distributed to my fellow students (and eventually (hopefully) the world) as a learning resource. For anybody interested, it is licensed under GPL and I will be working in my spare time on putting together a github repo to help with distribution.
