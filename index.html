@@ -31,13 +31,15 @@ layout: default
 
     <div class="container">
       {% for post in site.posts %}
-        <section id="main_content">
+      	<div class="container">
+          <section id="main_content">
 
-          <h1>{{ post.title }}</h1>
+            <h1>{{ post.title }}</h1>
 
-            {{ post.content }}
+              {{ post.content }}
 
-        </section>
+          </section>
+        </div>
       {% endfor %}
     </div>
 
