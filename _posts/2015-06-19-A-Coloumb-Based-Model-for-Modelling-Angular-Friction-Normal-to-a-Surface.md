@@ -1,6 +1,6 @@
 ---
 layout: post
-title: A Coloumb Based Model for Simulating Angular Friction Normal to a Surface
+title: A Coulomb Based Model for Simulating Angular Friction Normal to a Surface
 ---
 
 So I said I came up with an algorithm for computing angular friction, and finally I tested it. At first I was unhappy with the results for reasons I can explain another time- but after a lot of thought (and reading a lot of papers about the physics of a top) realized that it is actually a correct & reliable way of computing discretized angular friction for motion that is about an axis normal to the surface.
@@ -33,7 +33,7 @@ Without further ado, the algorithm:
 7. ???
 8. Profit.
 
-On a more serious note, I really hope somebody might find this helpful. It took me a few tries to get this right. It seems like there exists an abundance of sources for the Coloumb Model of Friction but nothing talks about the angular case explicitly. I give all credit to Coloumb and his model. This work was completely derived from that.
+On a more serious note, I really hope somebody might find this helpful. It took me a few tries to get this right. It seems like there exists an abundance of sources for the Coulomb Model of Friction but nothing talks about the angular case explicitly. I give all credit to Coulomb and his model. This work was completely derived from that.
 
 Happy Hacking,
 Mr. Nex
