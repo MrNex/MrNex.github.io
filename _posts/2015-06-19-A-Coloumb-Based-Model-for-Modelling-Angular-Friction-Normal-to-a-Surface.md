@@ -19,17 +19,17 @@ Without further ado, the algorithm:
 -- Again, just a simple dot product between the two vectors.
 5. Determine the relative angular momentum of each object.
 -- L1 = I1 * (relativeAngularVelocityPerp * surfaceNormal)
-*** Where L1 is the angular momentum of object 1
-*** I1 is the inertia tensor of Object 1
-*** relativeAngularVelocityPerp is from (4)
-*** And the surface normal is the normal vector of the colliding surface
-*** Do note that in the case of point - point / edge - edge collisions and etc. I use the Minimum Translation Vector calculated during the collision resolution step.
+--- Where L1 is the angular momentum of object 1
+--- I1 is the inertia tensor of Object 1
+--- relativeAngularVelocityPerp is from (4)
+--- And the surface normal is the normal vector of the colliding surface
+--- Do note that in the case of point - point / edge - edge collisions and etc. I use the Minimum Translation Vector calculated during the collision resolution step.
 -- And don't forget to calculate L2 aswell!
 6. Determine & apply the frictional torque on each object.
 --1. If the magnitude of L# (5) does not overcome the value of the staticMagnitude (3) simply apply +- L# opposing the direction of intended motion.
-*** By +- I mean "Plus or Minus", determine which direction you must apply it to inhibit the angular motion. So in other words you may or may not need to scale L# by -1.
+--- By +- I mean "Plus or Minus", determine which direction you must apply it to inhibit the angular motion. So in other words you may or may not need to scale L# by -1.
 --2. If the magnitude of L# (5) does overcome the value of the staticMagnitude (3) simply apply a vector in the direction of L#, but scaled to the magnitude of +- dynamicMagnitude (3) opposing the direction of intending motion.
-*** Again, by +- I mean "Plus or Minus", determine which direction you must apply it to inhibit the angular motion. You may or may not need to scale it by -1.
+--- Again, by +- I mean "Plus or Minus", determine which direction you must apply it to inhibit the angular motion. You may or may not need to scale it by -1.
 7. ???
 8. Profit.
 
