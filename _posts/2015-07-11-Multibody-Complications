@@ -1,0 +1,8 @@
+---
+layout: post
+title: Hello Universe
+---
+
+I knew it was only a matter of time. After the implementation of linear and angular collision resolution, friction, and rolling, the integrity of my NGen's physics resolution now falters when dealing with elastic collisions with 4 simultaneously colliding objects.
+
+I am going to need to research techniques to properly solve multi-body collisions, but turns out it is a common and difficult problem which needs solving in many different fields of study.
