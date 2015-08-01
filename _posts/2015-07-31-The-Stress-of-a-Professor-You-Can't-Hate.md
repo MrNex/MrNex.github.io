@@ -24,4 +24,11 @@ For any professors out there reading this, please give grades that assess a stud
 
     ASSERT(i > count);
 
+Especially when just prior to that is the equivilent of:
 
+    count = i;
+    i += 2;
+    ...
+    ASSERT(i > count);
+    
+That's just wrong.
