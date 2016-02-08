@@ -1,6 +1,6 @@
 ---
 layout: post
-title: IGME-470: Blink - A  project proposal
+title: IGME-470 Blink - A  project proposal
 ---
 
 I am in this one *incredible* class this semester called Physical Computing and Alternative Interfaces. We focus on prototyping computing devices and systems with which humans can interact on a physical level. The first assignment, called Blink, requires you to build something using LEDs.
