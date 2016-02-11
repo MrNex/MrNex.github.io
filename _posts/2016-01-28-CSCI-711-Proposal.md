@@ -7,7 +7,7 @@ Throughout my time in the Global Illumination course at RIT I will be working on
 
 ##What?
 
-I would like to build a real time ray tracer into my game engine, [NGen (www.github.com/MrNex/NGen)]. This ray tracer should be able to render a low object scene (3 visible objects) while still processing input, collision detection, object state/behaviors, and physics. It should be noted that while this scope seems large, everything besides the ray tracer is already implemented.
+I would like to build a real time ray tracer into my game engine, [NGen (www.github.com/MrNex/NGen)]. This ray tracer should be able to render a low-mid object dynamic scene while still processing input, collision detection, object state/behaviors, and physics. It should be noted that while this scope seems large, everything besides the ray tracer is already implemented.
 
 ##Why?
 
