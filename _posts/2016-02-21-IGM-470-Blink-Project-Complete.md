@@ -70,215 +70,213 @@ Below is the code:
 		//Set timer mode
 		OPTION_REGbits.TMR0CS = 0;  //Set TMR0 to increment once per instruction cycle
 		OPTION_REGbits.T0CS = 0;    //Use internal clock as TMR0 source
-    OPTION_REGbits.PSA = 1;     //Assign prescaler to WDT so TMR0 updates 1:1 with internal clock
+		OPTION_REGbits.PSA = 1;     //Assign prescaler to WDT so TMR0 updates 1:1 with internal clock
    
-    TRISCbits.TRISC2 = 0;
-    TRISCbits.TRISC1 = 0;
-    TRISCbits.TRISC0 = 0;
+		TRISCbits.TRISC2 = 0;
+		TRISCbits.TRISC1 = 0;
+		TRISCbits.TRISC0 = 0;
+		LED0 = 0;
+		LED1 = 0;
+		LED2 = 0;
    
-    LED0 = 0;
-    LED1 = 0;
-    LED2 = 0;
+		TRISCbits.TRISC4 = 1;
+		TRISCbits.TRISC5 = 1;
+		TRISAbits.TRISA5 = 1;
    
-    TRISCbits.TRISC4 = 1;
-    TRISCbits.TRISC5 = 1;
-    TRISAbits.TRISA5 = 1;
+		order = 0;
+		length = 0;
    
-    order = 0;
-    length = 0;
+		playDelay = 500;
    
-    playDelay = 500;
-   
-    for(int i = 0; i < MAXLEN; i++) sequence[i] = (unsigned char)0;
-    for(int i = 0; i < 5; i++)
-    {
-        AddElement();
-    }
-}
 
-///
-//Returns "random" number between 0 and 3 (non inclusive))
-unsigned char ChooseRandomElement()
-{
-    char lfsr = TMR0bits.TMR0;
-    char b = 0;
-    for(int i = 0; i < 10; i++)
-    {
-        b = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
-        lfsr = ((lfsr >> 1) | (b << 7));
-    }
-   
-    unsigned char retVal = (save ^ lfsr)%3;
-    save = (lfsr * lfsr - lfsr);
-    return retVal;
-}
+		for(int i = 0; i < MAXLEN; i++) sequence[i] = (unsigned char)0;
 
-void AddElement()
-{
-    if(length >= MAXLEN) length = 0;
-   
-    unsigned char numChosen = ChooseRandomElement();
-    sequence[length++] = numChosen;
-   
-}
+		for(int i = 0; i < 5; i++)
+		{
+			AddElement();
+		}
+	}
 
-void PlaySequence()
-{
-    for(int i = 0; i < length; i++)
-    {
-        switch(sequence[i])
-        {
-            case 0:     //Toggle LED 0
-                LED0 = 1;
-                break;
-            case 1:
-                LED1 = 1;
-                break;
-            case 2:
-                LED2 = 1;
-                break;
-            default:
-                LED0 = 1;
-                LED1 = 1;
-                LED2 = 1;
-                break;
+	///
+	//Returns "random" number between 0 and 3 (non inclusive))
+	unsigned char ChooseRandomElement()
+	{
+		char lfsr = TMR0bits.TMR0;
+ 		char b = 0;
+		for(int i = 0; i < 10; i++)
+		{
+			b = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+			lfsr = ((lfsr >> 1) | (b << 7));
+		}
+   
+		unsigned char retVal = (save ^ lfsr)%3;
+		save = (lfsr * lfsr - lfsr);
+		return retVal;
+	}
+
+	void AddElement()
+	{
+		if(length >= MAXLEN) length = 0;
+   
+		unsigned char numChosen = ChooseRandomElement();
+		sequence[length++] = numChosen;
+	}
+
+	void PlaySequence()
+	{
+		for(int i = 0; i < length; i++)
+		{
+			switch(sequence[i])
+			{
+			case 0:    	//Toggle LED 0
+                		LED0 = 1;
+               			break;
+            		case 1:
+                		LED1 = 1;
+                		break;
+            		case 2:
+                		LED2 = 1;
+                		break;
+			default:
+				LED0 = 1;
+				LED1 = 1;
+				LED2 = 1;
+				break;
+        		}
+       
+			for(int j = 0; j < playDelay; j++)
+			{
+				__delay_ms(1);
+			}
+			switch(sequence[i])
+			{
+			case 0:     //Toggle LED 0
+				LED0 = 0;
+                		break;
+            		case 1:
+                		LED1 = 0;
+                		break;
+            		case 2:
+                		LED2 = 0;
+                		break;
+            		default:
+                		LED0 = 0;
+                		LED1 = 0;
+                		LED2 = 0;
+                		break;
                
-               
-        }
+        		}
        
-        for(int j = 0; j < playDelay; j++)
-        {
-            __delay_ms(1);
-        }
-        switch(sequence[i])
-        {
-            case 0:     //Toggle LED 0
-                LED0 = 0;
-                break;
-            case 1:
-                LED1 = 0;
-                break;
-            case 2:
-                LED2 = 0;
-                break;
-            default:
-                LED0 = 0;
-                LED1 = 0;
-                LED2 = 0;
-                break;
-               
-        }
-       
-        for(int j = 0; j < playDelay; j++)
-        {
-            __delay_ms(1);
-        }
-    }
+        		for(int j = 0; j < playDelay; j++)
+        		{
+        			__delay_ms(1);
+        		}
+    		}
    
-}
+	}
 
-unsigned char GetButtonPress()
-{
-    while(1)
-    {
-        if(!SWITCH0)
-        {
-            LED0 = 1;
-            return 0;
-        }
-        else if(!SWITCH1)
-        {
-            LED1 = 1;
-            return 1;
-        }
-        else if(!SWITCH2)
-        {
-            LED2 = 1;
-            return 2;
-        }
-    }
-}
+	unsigned char GetButtonPress()
+	{
+   		while(1)
+    		{
+        		if(!SWITCH0)
+        		{
+            			LED0 = 1;
+            			return 0;
+        		}
+        		else if(!SWITCH1)
+        		{
+            			LED1 = 1;
+            			return 1;
+        		}
+        		else if(!SWITCH2)
+        		{
+            			LED2 = 1;
+            			return 2;
+        		}
+    		}
+	}
 
-void GetButtonRelease()
-{
-    while(1)
-    {
-        if(SWITCH0 && SWITCH1 && SWITCH2) break;
-    }
-    LED0 = LED1 = LED2 = 0;
-}
+	void GetButtonRelease()
+	{
+		while(1)
+		{
+			if(SWITCH0 && SWITCH1 && SWITCH2) break;
+		}
+		LED0 = LED1 = LED2 = 0;
+	}
 
-///
-//Returns 0 if Listening was successful
-unsigned char Listen()
-{
-    for(int i = 0; i < length; i++)
-    {
-        unsigned char selection = GetButtonPress();
-        if(selection != sequence[i]) return 1;
-        GetButtonRelease();
-    }
-    return 0;
-}
+	///
+	//Returns 0 if Listening was successful
+	unsigned char Listen()
+	{
+		for(int i = 0; i < length; i++)
+		{
+			unsigned char selection = GetButtonPress();
+        		if(selection != sequence[i]) return 1;
+        			GetButtonRelease();
+    		}
+    		return 0;
+	}
 
-void Win()
-{
-    for(int i = 0; i < 10; i++)
-    {
-        LED0 = 1;
-        __delay_ms(100);
-        LED0 = 0;
-        LED1 = 1;
-        __delay_ms(100);
-        LED1 = 0;
-        LED2 = 1;
-        __delay_ms(100);
-        LED2 = 0;
-    }
-    AddElement();
-}
+	void Win()
+	{
+		for(int i = 0; i < 10; i++)
+		{
+        		LED0 = 1;
+        		__delay_ms(100);
+        		LED0 = 0;
+        		LED1 = 1;
+        		__delay_ms(100);
+        		LED1 = 0;
+        		LED2 = 1;
+        		__delay_ms(100);
+        		LED2 = 0;
+    		}
+    		AddElement();
+	}
 
-void Lose()
-{
-    for(int i = 0; i < 3; i++)
-    {
-        LED0 = LED1 = LED2 = 1;
-        __delay_ms(1000);
-        LED0 = LED1 = LED2 = 0;
-        __delay_ms(1000);
-    }
+	void Lose()
+	{
+    		for(int i = 0; i < 3; i++)
+    		{
+        		LED0 = LED1 = LED2 = 1;
+        		__delay_ms(1000);
+        		LED0 = LED1 = LED2 = 0;
+        		__delay_ms(1000);
+    		}
    
-    playDelay -= 20;
+    		playDelay -= 20;
 
-}
+	}
 
-/*
- *
- */
-int main(int argc, char** argv)
-{
-    Setup();
+	/*
+	 *
+	 */
+	int main(int argc, char** argv)
+	{
+		Setup();
+
+		while(1)
+		{
+        		PlaySequence();
    
-    while(1)
-    {
-        PlaySequence();
-   
-        unsigned char result = Listen();
+        		unsigned char result = Listen();
    
        
        
-        if(result)
-        {
-            Lose();
-        }
-        else
-        {
-            __delay_ms(500);
-            Win();
-        }
+        		if(result)
+        		{
+            			Lose();
+        		}
+        		else
+        		{
+            			__delay_ms(500);
+            			Win();
+        		}
        
-        __delay_ms(1000);
-    }
+        		__delay_ms(1000);
+    		}
 
-    return (EXIT_SUCCESS);
-}	
+    		return (EXIT_SUCCESS);
+	}	
