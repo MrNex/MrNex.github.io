@@ -22,54 +22,54 @@ When switched on the game begins, first the user will be shown a pattern of 5 li
 
 Below is the code:
 
-/*
- * File:   1829SimonSays.c
- * Author: Nicholas Gallagher
- *
- * Created on February 10, 2016, 10:34 AM
- */
+	/*
+ 	* File:   1829SimonSays.c
+ 	* Author: Nicholas Gallagher
+ 	*
+ 	* Created on February 10, 2016, 10:34 AM
+ 	*/
 
 
 
-#include <stdio.h>
-#include <stdlib.h>
+	#include <stdio.h>
+	#include <stdlib.h>
 
 
-#include <htc.h>            //PIC hardware mapping
+	#include <htc.h>            //PIC hardware mapping
 
-//Set configuration bits
-__CONFIG(FOSC_INTOSC & WDTE_OFF & PWRTE_OFF & MCLRE_OFF & CP_OFF & CPD_OFF & BOREN_ON & CLKOUTEN_OFF & IESO_OFF & FCMEN_OFF);
-__CONFIG(WRT_OFF & PLLEN_OFF & STVREN_OFF & LVP_OFF);
+	//Set configuration bits
+	__CONFIG(FOSC_INTOSC & WDTE_OFF & PWRTE_OFF & MCLRE_OFF & CP_OFF & CPD_OFF & BOREN_ON & CLKOUTEN_OFF & IESO_OFF & FCMEN_OFF);
+	__CONFIG(WRT_OFF & PLLEN_OFF & STVREN_OFF & LVP_OFF);
 
-#define _XTAL_FREQ 500000
+	#define _XTAL_FREQ 500000
 
-#define LED0 LATCbits.LATC2
-#define LED1 LATCbits.LATC1
-#define LED2 LATCbits.LATC0
+	#define LED0 LATCbits.LATC2
+	#define LED1 LATCbits.LATC1
+	#define LED2 LATCbits.LATC0
 
-#define SWITCH0 PORTCbits.RC4
-#define SWITCH1 PORTCbits.RC5
-#define SWITCH2 PORTAbits.RA5
+	#define SWITCH0 PORTCbits.RC4
+	#define SWITCH1 PORTCbits.RC5
+	#define SWITCH2 PORTAbits.RA5
 
-#define MAXLEN 30
+	#define MAXLEN 30
 
-unsigned char sequence[MAXLEN];
-unsigned char order;
-unsigned char length;
-unsigned short playDelay;
+	unsigned char sequence[MAXLEN];
+	unsigned char order;
+	unsigned char length;
+	unsigned short playDelay;
 
-unsigned char save = 0;
+	unsigned char save = 0;
 
-//Declarations
-unsigned char ChooseRandomElement();
-void AddElement();
-void PlaySequence();
+	//Declarations
+	unsigned char ChooseRandomElement();
+	void AddElement();
+	void PlaySequence();
 
-void Setup()
-{
-    //Set timer mode
-    OPTION_REGbits.TMR0CS = 0;  //Set TMR0 to increment once per instruction cycle
-    OPTION_REGbits.T0CS = 0;    //Use internal clock as TMR0 source
+	void Setup()
+	{
+		//Set timer mode
+		OPTION_REGbits.TMR0CS = 0;  //Set TMR0 to increment once per instruction cycle
+		OPTION_REGbits.T0CS = 0;    //Use internal clock as TMR0 source
     OPTION_REGbits.PSA = 1;     //Assign prescaler to WDT so TMR0 updates 1:1 with internal clock
    
     TRISCbits.TRISC2 = 0;
