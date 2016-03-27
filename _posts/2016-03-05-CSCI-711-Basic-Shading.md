@@ -8,7 +8,7 @@ Recently in my Global Illumination course we were asked to implement basic phong
 But without further delay, here is the scene with shadows rendered in all of it's glory:
 <figure>
 <a href="/images/2016-03-05-Checkpoint3.png">
-<img src="/images=/2016-03-05-Checkpoint3.png">
+<img src="/images/2016-03-05-Checkpoint3.png">
 </a>
 <figcaption>A scene rendered with shadows depicting two spheres made of different materials</figcaption>
 </figure>
