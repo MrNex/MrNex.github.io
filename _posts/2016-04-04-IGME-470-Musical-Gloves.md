@@ -11,8 +11,7 @@ The interval constants I chose to use can be found via the following link: [phy.
 
 For this project I utilised the PIC16F1829, which has been really growing on me throughout this year. The controller has a boatload of pins which support ADC, aswell as PWM capabilities. I strive to try and maintain a 50% duty cycle ratio for a nice full sound, and found that I can approximately generate notes from ~290 Hz to ~4200 Hz. This range can be dynamically adjusted by intelligently setting the prescaler of the timer I am using for my PWM output. I also include a potentiometer for adjusting volume (Unfortunately the neighbors did not seem to like the lulling cry of square waves through my thin Riverknoll walls- the small price to pay for science).
 
-At the following link you can find a video of the glove in action:
-[https://drive.google.com/file/d/0B2ou4k3PM0y4dDFzWUpuMVhSRVp3cC1MQjFMSUE0eHRsNGhr/view?usp=sharing]
+At the following link you can find a video of the glove in action: [Video Link(https://drive.google.com/file/d/0B2ou4k3PM0y4dDFzWUpuMVhSRVp3cC1MQjFMSUE0eHRsNGhr/view?usp=sharing)]
 
 
 And below you can find the code for the project (Released under QPL if anybody wants to use it):
