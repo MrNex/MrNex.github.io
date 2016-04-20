@@ -10,7 +10,7 @@ The tones are generated through two separate PWM outputs, which are then added t
 Below you can see the circuit:
 <figure>
 <a href="/images/2016-04-20-InstrumentCircuit.png">
-<img src="</images/2016-04-20-InstrumentCircuit.png">
+<img src="/images/2016-04-20-InstrumentCircuit.png">
 </a>
 <figcaption>It should be noted that missing from the image here are the 10 force sensitive resistors all wired to separate analog capable pins on my microcontroller.
 </figure>
