@@ -12,7 +12,6 @@ Below you can see the circuit:
 <a href="/images/2016-04-20-InstrumentCircuit.png">
 <img src="/images/2016-04-20-InstrumentCircuit.png">
 </a>
-<figcaption>It should be noted that missing from the image here are the 10 force sensitive resistors all wired to separate analog capable pins on my microcontroller.</figcaption>
 </figure>
 
 I had a lot of fun with this assignment. Eventually I stopped working on it because every time I took it out I would just end up playing songs that I could translate from my background playing piano or my small knowledge of music theory. Some features I did include that I was very happy with is the ability to tune the instrument to both the chromatic or harmonic scales (and the code for pentatonic, or similar, would be trivial). This allows the instrument to be given to somebody with no musical background and them easily be able to play in tune. While others, who understand the strange combination of music theory / temperment and binary needed to play the instrument properly, can perform more elaborate pieces including dissonance, key changes, and more.
