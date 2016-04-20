@@ -19,336 +19,339 @@ I had a lot of fun with this assignment. Eventually I stopped working on it beca
 
 Here is the code for a PIC16F1829 microcontroller to drive the circuit above:
 
-	/*
-	* File:   1829Instrument.c
-	* Author: Nicholas Gallagher
-	*
-	* Created on January 28, 2016, 2:43 PM
-	*/
 
-	#include <stdio.h>
-	#include <stdlib.h>
-
+		/*
+		* File:   1829Instrument.c
+		* Author: Nicholas Gallagher
+		*
+		* Created on January 28, 2016, 2:43 PM
+		*/
 	
-	#include <htc.h>            //PIC hardware mapping
+		#include <stdio.h>
+		#include <stdlib.h>
 	
-	//Set configuration bits
-	__CONFIG(FOSC_INTOSC & WDTE_OFF & PWRTE_OFF & MCLRE_OFF & CP_OFF & CPD_OFF & BOREN_ON & CLKOUTEN_OFF & IESO_OFF & FCMEN_OFF);
-	__CONFIG(WRT_OFF & PLLEN_OFF & STVREN_OFF & LVP_OFF);
-	
-	#define _XTAL_FREQ 31000
-	
-	#define FOSC 31000
-	
-	///
-	//Treble
-	//Treble duty cycle
-	#define TREBLEDUTYCYCLEMSBPIN CCPR1L
-	#define TREBLEDUTYCYCLELSBPIN CCP1CONbits.DC1B
-	//Treble sample period
-	#define TREBLESAMPLEPERIODPIN PR2
-	
-	
-	///
-	//Bass
-	//Bass duty cycle
-	#define BASSDUTYCYCLEMSBPIN CCPR2L
-	#define BASSDUTYCYCLELSBPIN CCP2CONbits.DC2B
-	//Bass sample period
-	#define BASSSAMPLEPERIODPIN PR4
-	
-	
-	#define FSR1 0b00010
-	#define FSR2 0b00100
-	#define FSR3 0b00101
-	#define FSR4 0b00110
-	#define FSR5 0b01010
-	
-	#define FSR6 0b01011
-	#define FSR7 0b00011
-	#define FSR8 0b00111
-	#define FSR9 0b01000
-	#define FSR10 0b01001
-	
-	
-	#define PRESSURETHRESHOLD 128
-	
-	#define BASSRANGE 5
-	
-	#define OCTAVE(x,y) ((x)/(y))
-	#define NOTE(x,y) ((x)%(y))
-	
-	#define CHROMATICOCTAVE(x) OCTAVE((x), 12)
-	#define HARMONICOCTAVE(x) OCTAVE((x),7)
-	
-	#define CHROMATICNOTE(x) NOTE((x),12);
-	#define HARMONICNOTE(x) HARMONICS[NOTE((x),7)]
-	
-	#define ROOTFREQUENCY 31
-	#define Freq(octave, note) ((ROOTFREQUENCY << (octave)) * INTERVALS[(note)]);
-	
-	#define SLEEPTIME 10000
-	
-	int timeSinceInput = 0;
-	int cyclesSinceTime = 0;
-	
-	const float INTERVALS[] = { 1.0f, 1.05946f, 1.12246f, 1.18921f, 1.25992f, 1.33483f, 1.41421f, 1.49831f, 1.58740f, 1.68179f, 1.78180f, 1.88775f, 2.0f};
-	const int HARMONICS[] = { 0, 2, 4, 5, 7, 9, 11};
-	
-	const int numNotes = 30;
-	const int ODETOJOYTREBLENOTES[] = { 2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 2, 1, 1, 2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 1, 0, 0 };
-	const int ODETOJOYTREBLETIMES[] = { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 2, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 2, 16 };
-	
-	const int ODETOJOYBASSNOTES[] = {2, 4, 0};
-	const int ODETOJOYBASSQUEUES[] = {0, 5, 10, 15, 20, 25};
-	
-	//Initialize internal timer for 32MHz freq. selection
-	void InitializeOscillator(void)
-	{
-		OSCCONbits.SCS = 0b10;
-		OSCCONbits.IRCF = 0b0000;   //31khz HLINTOSC set
-		OSCCONbits.SPLLEN = 0b0;    // no 4xPLL
-					    //31 Khz FOSC speed!
-	}
-	
-	void InitializePWM(void)
-	{
-		//Initializing Treble PWM
-		TRISCbits.TRISC5 = 1;
-		TREBLESAMPLEPERIODPIN = 0;          //Period
-		CCP1CON = 0b00001100;
-		TREBLEDUTYCYCLEMSBPIN = 0;        //Duty cycle
-		TREBLEDUTYCYCLELSBPIN = 0;
-	
-		CCPTMRSbits.C1TSEL = 0b00;      //Set Timer2 to use with PWM 1 (treble)
-		PIR2bits.C2IF = 0b0;          //Clear timer 2 interrupt flag
-		T2CONbits.T2CKPS = 0b01;         //1:16 prescaler for timer2
-		T2CONbits.TMR2ON = 0b1;         //Turn timer 2 on
-		TRISCbits.TRISC5 = 0;
-	
-	
-		//Initializing Bass PWM
-		TRISAbits.TRISA5 = 1;
-	
-		//Route output of CPP2 register to RA5
-		APFCON1bits.CCP2SEL = 1;
-	
-		BASSSAMPLEPERIODPIN = 0;
-	
-		CCP2CON = 0b00001100;           //Configures CCP2 for PWM
-	
-		BASSDUTYCYCLEMSBPIN = 0;
-		BASSDUTYCYCLELSBPIN = 0;
-	
-		CCPTMRSbits.C2TSEL = 0b01;       //Set Timer4 to use with PWM2 (bass)
-		PIR3bits.TMR4IF = 0;
-		T4CONbits.T4CKPS = 0b01;        //1:4 prescaler on timer 4
-		T4CONbits.TMR4ON = 0b1;            //Turn timer 4 on
-	
-		TRISAbits.TRISA5 = 0;
-	
-	}
-	
-	void InitializeADC(void)
-	{
-		ANSELAbits.ANSA2 = 1;   //FSR1
-		ANSELCbits.ANSC0 = 1;   //FSR2
-		ANSELCbits.ANSC1 = 1;   //FSR3
-		ANSELCbits.ANSC2 = 1;   //FSR4
-		ANSELBbits.ANSB4 = 1;   //FSR5
-	
-		ANSELBbits.ANSB5 = 1;   //FSR6
-		ANSELAbits.ANSA4 = 1;   //FSR7
-		ANSELCbits.ANSC3 = 1;   //FSR8
-		ANSELCbits.ANSC6 = 1;   //FSR9
-		ANSELCbits.ANSC7 = 1;   //FSR10
-	
-		//Set ADC conversion to use internal oscillator 0bx11
-		ADCON1bits.ADCS = 0b111;
-		//Set the negative voltage reference to VSS
-		ADCON1bits.ADNREF = 0;
-		//Set the positive voltage reference to VDD
-		ADCON1bits.ADPREF = 0b00;
-		//Left justify the results (ADRESH holds 8 MSB, ADRESL holds 2 LSB in the MSB)
-		//See page 147 of data sheet for clarification
-		ADCON1bits.ADFM = 0;
-	
-		//Select the ADC input channel (AN2 == RA2)
-		ADCON0bits.CHS = FSR1;
-	
-		//Turn on ADC
-		ADCON0bits.ADON = 1;
-	
-	}
-	
-	void InitializePins()
-	{
-		TRISCbits.TRISC5 = 0;   //Treble Speaker / transistor switch
-		TRISAbits.TRISA5 = 0;
-		TRISAbits.TRISA2 = 1;   //FSR1
-		TRISCbits.TRISC0 = 1;   //FSR2
-		TRISCbits.TRISC1 = 1;   //FSR3
-		TRISCbits.TRISC2 = 1;   //FSR4
-		TRISBbits.TRISB4 = 1;   //FSR5
-	
-		TRISBbits.TRISB5 = 1;   //FSR6
-		TRISAbits.TRISA4 = 1;   //FSR7
-		TRISCbits.TRISC3 = 1;   //FSR8
-		TRISCbits.TRISC6 = 1;   //FSR9
-		TRISCbits.TRISC7 = 1;   //FSR10
-	
-	
-		LATC = 0;
-		LATA = 0;
-	
-	}
-	
-	
-	void TrebleFreqOut(int frequency)
-	{  
-		int samplerVal = (int)((float)FOSC / (4.0f * (float)frequency)) - 1;
-		TREBLESAMPLEPERIODPIN = (char)samplerVal;
-		samplerVal /= 2;
-		TREBLEDUTYCYCLELSBPIN = (samplerVal & 0b11);
-		TREBLEDUTYCYCLEMSBPIN = (samplerVal >> 2);
-	}
-	
-	void BassFreqOut(int frequency)
-	{
-		int samplerVal = (int)((float)FOSC / (4.0f * (float)frequency)) - 1;
-		BASSSAMPLEPERIODPIN = (char)samplerVal;
-		samplerVal /= 2;
-		BASSDUTYCYCLELSBPIN = (samplerVal & 0b11);
-		BASSDUTYCYCLEMSBPIN = (samplerVal >> 2);
-	
-	}
-	
-	unsigned char ReadPWM(unsigned char channel)
-	{
-		ADCON0bits.CHS = channel & 0b00011111;
-		__delay_us(5);      //ADC charging cap takes 5us to settle
-		GO = 1;             //Begin ADC process
-		while(GO) continue; //GO bit will be set low once ADC process completes
-		return ADRESH;      //return 8 MSB of the result
-	}
-	
-	void PlaySong(void)
-	{
-		int lastBass = 0;
-		for(int i = 0; i < numNotes; i++)
+		
+		#include <htc.h>            //PIC hardware mapping
+		
+		//Set configuration bits
+		__CONFIG(FOSC_INTOSC & WDTE_OFF & PWRTE_OFF & MCLRE_OFF & CP_OFF & CPD_OFF & BOREN_ON & CLKOUTEN_OFF & IESO_OFF & FCMEN_OFF);
+		__CONFIG(WRT_OFF & PLLEN_OFF & STVREN_OFF & LVP_OFF);
+		
+		#define _XTAL_FREQ 31000
+		
+		#define FOSC 31000
+		
+		///
+		//Treble
+		//Treble duty cycle
+		#define TREBLEDUTYCYCLEMSBPIN CCPR1L
+		#define TREBLEDUTYCYCLELSBPIN CCP1CONbits.DC1B
+		//Treble sample period
+		#define TREBLESAMPLEPERIODPIN PR2
+		
+		
+		///
+		//Bass
+		//Bass duty cycle
+		#define BASSDUTYCYCLEMSBPIN CCPR2L
+		#define BASSDUTYCYCLELSBPIN CCP2CONbits.DC2B
+		//Bass sample period
+		#define BASSSAMPLEPERIODPIN PR4
+		
+		
+		#define FSR1 0b00010
+		#define FSR2 0b00100
+		#define FSR3 0b00101
+		#define FSR4 0b00110
+		#define FSR5 0b01010
+		
+		#define FSR6 0b01011
+		#define FSR7 0b00011
+		#define FSR8 0b00111
+		#define FSR9 0b01000
+		#define FSR10 0b01001
+		
+		
+		#define PRESSURETHRESHOLD 128
+		
+		#define BASSRANGE 5
+		
+		#define OCTAVE(x,y) ((x)/(y))
+		#define NOTE(x,y) ((x)%(y))
+		
+		#define CHROMATICOCTAVE(x) OCTAVE((x), 12)
+		#define HARMONICOCTAVE(x) OCTAVE((x),7)
+		
+		#define CHROMATICNOTE(x) NOTE((x),12);
+		#define HARMONICNOTE(x) HARMONICS[NOTE((x),7)]
+		
+		#define ROOTFREQUENCY 31
+		#define Freq(octave, note) ((ROOTFREQUENCY << (octave)) * INTERVALS[(note)]);
+		
+		#define SLEEPTIME 10000
+		
+		int timeSinceInput = 0;
+		int cyclesSinceTime = 0;
+		
+		const float INTERVALS[] = { 1.0f, 1.05946f, 1.12246f, 1.18921f, 1.25992f, 1.33483f, 1.41421f, 1.49831f, 1.58740f, 1.68179f, 1.78180f, 1.88775f, 2.0f};
+		const int HARMONICS[] = { 0, 2, 4, 5, 7, 9, 11};
+		
+		const int numNotes = 30;
+		const int ODETOJOYTREBLENOTES[] = { 2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 2, 1, 1, 2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 1, 0, 0 };
+		const int ODETOJOYTREBLETIMES[] = { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 2, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 2, 16 };
+		
+		const int ODETOJOYBASSNOTES[] = {2, 4, 0};
+		const int ODETOJOYBASSQUEUES[] = {0, 5, 10, 15, 20, 25};
+		
+		//Initialize internal timer for 32MHz freq. selection
+		void InitializeOscillator(void)
 		{
-			int trebleOctave = 2;
-			int trebleNote = HARMONICNOTE(ODETOJOYTREBLENOTES[i]);
-	
-			int freq = (int)Freq(trebleOctave, trebleNote);
-	
-			if(freq > 0)
+			OSCCONbits.SCS = 0b10;
+			OSCCONbits.IRCF = 0b0000;   //31khz HLINTOSC set
+			OSCCONbits.SPLLEN = 0b0;    // no 4xPLL
+						    //31 Khz FOSC speed!
+		}
+		
+		void InitializePWM(void)
+		{
+			//Initializing Treble PWM
+			TRISCbits.TRISC5 = 1;
+			TREBLESAMPLEPERIODPIN = 0;          //Period
+			CCP1CON = 0b00001100;
+			TREBLEDUTYCYCLEMSBPIN = 0;        //Duty cycle
+			TREBLEDUTYCYCLELSBPIN = 0;
+		
+			CCPTMRSbits.C1TSEL = 0b00;      //Set Timer2 to use with PWM 1 (treble)
+			PIR2bits.C2IF = 0b0;          //Clear timer 2 interrupt flag
+			T2CONbits.T2CKPS = 0b01;         //1:16 prescaler for timer2
+			T2CONbits.TMR2ON = 0b1;         //Turn timer 2 on
+			TRISCbits.TRISC5 = 0;
+		
+		
+			//Initializing Bass PWM
+			TRISAbits.TRISA5 = 1;
+		
+			//Route output of CPP2 register to RA5
+			APFCON1bits.CCP2SEL = 1;
+		
+			BASSSAMPLEPERIODPIN = 0;
+		
+			CCP2CON = 0b00001100;           //Configures CCP2 for PWM
+		
+			BASSDUTYCYCLEMSBPIN = 0;
+			BASSDUTYCYCLELSBPIN = 0;
+		
+			CCPTMRSbits.C2TSEL = 0b01;       //Set Timer4 to use with PWM2 (bass)
+			PIR3bits.TMR4IF = 0;
+			T4CONbits.T4CKPS = 0b01;        //1:4 prescaler on timer 4
+			T4CONbits.TMR4ON = 0b1;            //Turn timer 4 on
+		
+			TRISAbits.TRISA5 = 0;
+		
+		}
+		
+		void InitializeADC(void)
+		{
+			ANSELAbits.ANSA2 = 1;   //FSR1
+			ANSELCbits.ANSC0 = 1;   //FSR2
+			ANSELCbits.ANSC1 = 1;   //FSR3
+			ANSELCbits.ANSC2 = 1;   //FSR4
+			ANSELBbits.ANSB4 = 1;   //FSR5
+		
+			ANSELBbits.ANSB5 = 1;   //FSR6
+			ANSELAbits.ANSA4 = 1;   //FSR7
+			ANSELCbits.ANSC3 = 1;   //FSR8
+			ANSELCbits.ANSC6 = 1;   //FSR9
+			ANSELCbits.ANSC7 = 1;   //FSR10
+		
+			//Set ADC conversion to use internal oscillator 0bx11
+			ADCON1bits.ADCS = 0b111;
+			//Set the negative voltage reference to VSS
+			ADCON1bits.ADNREF = 0;
+			//Set the positive voltage reference to VDD
+			ADCON1bits.ADPREF = 0b00;
+			//Left justify the results (ADRESH holds 8 MSB, ADRESL holds 2 LSB in the MSB)
+			//See page 147 of data sheet for clarification
+			ADCON1bits.ADFM = 0;
+		
+			//Select the ADC input channel (AN2 == RA2)
+			ADCON0bits.CHS = FSR1;
+		
+			//Turn on ADC
+			ADCON0bits.ADON = 1;
+		
+		}
+		
+		void InitializePins()
+		{
+			TRISCbits.TRISC5 = 0;   //Treble Speaker / transistor switch
+			TRISAbits.TRISA5 = 0;
+			TRISAbits.TRISA2 = 1;   //FSR1
+			TRISCbits.TRISC0 = 1;   //FSR2
+			TRISCbits.TRISC1 = 1;   //FSR3
+			TRISCbits.TRISC2 = 1;   //FSR4
+			TRISBbits.TRISB4 = 1;   //FSR5
+		
+			TRISBbits.TRISB5 = 1;   //FSR6
+			TRISAbits.TRISA4 = 1;   //FSR7
+			TRISCbits.TRISC3 = 1;   //FSR8
+			TRISCbits.TRISC6 = 1;   //FSR9
+			TRISCbits.TRISC7 = 1;   //FSR10
+		
+		
+			LATC = 0;
+			LATA = 0;
+		
+		}
+		
+		
+		void TrebleFreqOut(int frequency)
+		{  
+			int samplerVal = (int)((float)FOSC / (4.0f * (float)frequency)) - 1;
+			TREBLESAMPLEPERIODPIN = (char)samplerVal;
+			samplerVal /= 2;
+			TREBLEDUTYCYCLELSBPIN = (samplerVal & 0b11);
+			TREBLEDUTYCYCLEMSBPIN = (samplerVal >> 2);
+		}
+		
+		void BassFreqOut(int frequency)
+		{
+			int samplerVal = (int)((float)FOSC / (4.0f * (float)frequency)) - 1;
+			BASSSAMPLEPERIODPIN = (char)samplerVal;
+			samplerVal /= 2;
+			BASSDUTYCYCLELSBPIN = (samplerVal & 0b11);
+			BASSDUTYCYCLEMSBPIN = (samplerVal >> 2);
+		
+		}
+		
+		unsigned char ReadPWM(unsigned char channel)
+		{
+			ADCON0bits.CHS = channel & 0b00011111;
+			__delay_us(5);      //ADC charging cap takes 5us to settle
+			GO = 1;             //Begin ADC process
+			while(GO) continue; //GO bit will be set low once ADC process completes
+			return ADRESH;      //return 8 MSB of the result
+		}
+		
+		void PlaySong(void)
+		{
+			int lastBass = 0;
+			for(int i = 0; i < numNotes; i++)
 			{
-				TrebleFreqOut(freq);
+				int trebleOctave = 2;
+				int trebleNote = HARMONICNOTE(ODETOJOYTREBLENOTES[i]);
+		
+				int freq = (int)Freq(trebleOctave, trebleNote);
+		
+				if(freq > 0)
+				{
+					TrebleFreqOut(freq);
+				}
+				if(i % 3 == 0)
+				{
+					int bassOctave = 0;
+					int bassNote = HARMONICNOTE(ODETOJOYBASSNOTES[lastBass]);
+					freq = (int)Freq(bassOctave, bassNote);
+					BassFreqOut(freq);
+					lastBass++;
+					if(lastBass > 2) lastBass = 0;
+				}
+		
+				for(int j = 0; j < ODETOJOYTREBLETIMES[i]; j++)
+				{
+					__delay_ms(500);  
+				}
+				TREBLEDUTYCYCLEMSBPIN = 0;
+				TREBLEDUTYCYCLELSBPIN = 0;
+				//BASSDUTYCYCLEMSBPIN = 0;
+				//BASSDUTYCYCLELSBPIN = 0;
+				__delay_ms(500);
 			}
-			if(i % 3 == 0)
-			{
-				int bassOctave = 0;
-				int bassNote = HARMONICNOTE(ODETOJOYBASSNOTES[lastBass]);
-				freq = (int)Freq(bassOctave, bassNote);
-				BassFreqOut(freq);
-				lastBass++;
-				if(lastBass > 2) lastBass = 0;
-			}
-	
-			for(int j = 0; j < ODETOJOYTREBLETIMES[i]; j++)
-			{
-				__delay_ms(500);  
-			}
+		
 			TREBLEDUTYCYCLEMSBPIN = 0;
 			TREBLEDUTYCYCLELSBPIN = 0;
-			//BASSDUTYCYCLEMSBPIN = 0;
-			//BASSDUTYCYCLELSBPIN = 0;
-			__delay_ms(500);
+			BASSDUTYCYCLEMSBPIN = 0;
+			BASSDUTYCYCLELSBPIN = 0;
+		
 		}
-	
-		TREBLEDUTYCYCLEMSBPIN = 0;
-		TREBLEDUTYCYCLELSBPIN = 0;
-		BASSDUTYCYCLEMSBPIN = 0;
-		BASSDUTYCYCLELSBPIN = 0;
-	
-	}
-	
-	/*
-	*
-	*/
-	int main(int argc, char** argv)
-	{
-		InitializePWM();
-		InitializePins();
-		InitializeADC();
-	
-		PlaySong();
-	
-		while(1)
+		
+		/*
+		*
+		*/
+		int main(int argc, char** argv)
 		{
-			char bassByte = 0;
-			char trebleByte = 0;
-	
-	
-			bassByte |= ((ReadPWM(FSR1) > PRESSURETHRESHOLD) << 0);
-			bassByte |= ((ReadPWM(FSR2) > PRESSURETHRESHOLD) << 1);
-			bassByte |= ((ReadPWM(FSR3) > PRESSURETHRESHOLD) << 2);
-			bassByte |= ((ReadPWM(FSR4) > PRESSURETHRESHOLD) << 3);
-			bassByte |= ((ReadPWM(FSR5) > PRESSURETHRESHOLD) << 4);
-	
-			trebleByte |= ((ReadPWM(FSR6) > PRESSURETHRESHOLD) << 0);
-			trebleByte |= ((ReadPWM(FSR7) > PRESSURETHRESHOLD) << 1);
-			trebleByte |= ((ReadPWM(FSR8) > PRESSURETHRESHOLD) << 2);
-			trebleByte |= ((ReadPWM(FSR9) > PRESSURETHRESHOLD) << 3);
-			trebleByte |= ((ReadPWM(FSR10) > PRESSURETHRESHOLD) << 4);
-	
-			int bassOctave = HARMONICOCTAVE(bassByte);
-			int trebleOctave = HARMONICOCTAVE(trebleByte) + 1;
-			int bassNote = HARMONICNOTE(bassByte);
-			int trebleNote = HARMONICNOTE(trebleByte);
-	
-			//int bassOctave = CHROMATICOCTAVE(bassByte);
-			//int trebleOctave = CHROMATICOCTAVE(trebleByte) + 1;
-			//int bassNote = CHROMATICNOTE(bassByte);
-			//int trebleNote = CHROMATICNOTE(trebleByte);       
-	
-			if(bassByte == 0)
+			InitializePWM();
+			InitializePins();
+			InitializeADC();
+		
+			PlaySong();
+		
+			while(1)
 			{
-				BASSDUTYCYCLEMSBPIN = 0;
-				BASSDUTYCYCLELSBPIN = 0;
-	
-				if(trebleByte == 0)
+				char bassByte = 0;
+				char trebleByte = 0;
+		
+		
+				bassByte |= ((ReadPWM(FSR1) > PRESSURETHRESHOLD) << 0);
+				bassByte |= ((ReadPWM(FSR2) > PRESSURETHRESHOLD) << 1);
+				bassByte |= ((ReadPWM(FSR3) > PRESSURETHRESHOLD) << 2);
+				bassByte |= ((ReadPWM(FSR4) > PRESSURETHRESHOLD) << 3);
+				bassByte |= ((ReadPWM(FSR5) > PRESSURETHRESHOLD) << 4);
+		
+				trebleByte |= ((ReadPWM(FSR6) > PRESSURETHRESHOLD) << 0);
+				trebleByte |= ((ReadPWM(FSR7) > PRESSURETHRESHOLD) << 1);
+				trebleByte |= ((ReadPWM(FSR8) > PRESSURETHRESHOLD) << 2);
+				trebleByte |= ((ReadPWM(FSR9) > PRESSURETHRESHOLD) << 3);
+				trebleByte |= ((ReadPWM(FSR10) > PRESSURETHRESHOLD) << 4);
+		
+				int bassOctave = HARMONICOCTAVE(bassByte);
+				int trebleOctave = HARMONICOCTAVE(trebleByte) + 1;
+				int bassNote = HARMONICNOTE(bassByte);
+				int trebleNote = HARMONICNOTE(trebleByte);
+		
+				//int bassOctave = CHROMATICOCTAVE(bassByte);
+				//int trebleOctave = CHROMATICOCTAVE(trebleByte) + 1;
+				//int bassNote = CHROMATICNOTE(bassByte);
+				//int trebleNote = CHROMATICNOTE(trebleByte);       
+		
+				if(bassByte == 0)
 				{
-					timeSinceInput++;
-					if(timeSinceInput >= SLEEPTIME)
+					BASSDUTYCYCLEMSBPIN = 0;
+					BASSDUTYCYCLELSBPIN = 0;
+		
+					if(trebleByte == 0)
+					{
+						timeSinceInput++;
+						if(timeSinceInput >= SLEEPTIME)
+						{
+							timeSinceInput = 0;
+							PlaySong();
+						}              
+					}
+					else
 					{
 						timeSinceInput = 0;
-						PlaySong();
-					}              
+		
+					}
 				}
 				else
 				{
-					timeSinceInput = 0;
-	
+					int bassFreq = (int)Freq(bassOctave, bassNote);
+					BassFreqOut(bassFreq);
+				}
+		
+				if(trebleByte == 0)
+				{
+					TREBLEDUTYCYCLEMSBPIN = 0;
+					TREBLEDUTYCYCLELSBPIN = 0;
+				}
+				else
+				{
+					int trebleFreq = (int)Freq(trebleOctave, trebleNote);
+					TrebleFreqOut(trebleFreq);
 				}
 			}
-			else
-			{
-				int bassFreq = (int)Freq(bassOctave, bassNote);
-				BassFreqOut(bassFreq);
-			}
-	
-			if(trebleByte == 0)
-			{
-				TREBLEDUTYCYCLEMSBPIN = 0;
-				TREBLEDUTYCYCLELSBPIN = 0;
-			}
-			else
-			{
-				int trebleFreq = (int)Freq(trebleOctave, trebleNote);
-				TrebleFreqOut(trebleFreq);
-			}
+			return (EXIT_SUCCESS);
 		}
-		return (EXIT_SUCCESS);
-	}
+
+
