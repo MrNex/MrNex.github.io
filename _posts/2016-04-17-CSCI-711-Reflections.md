@@ -13,30 +13,30 @@ I am way to tired- so this one will be kept short. This assignment posed a lot o
 <figure>
 <a href="/images/2016-04-17-Reflections2.png">
 <img src="/images/2016-04-17-Reflections2.png">
-<figcaption>Not quite correct</figcaption>
 </a>
+<figcaption>Not quite correct</figcaption>
 </figure>
 <figure>
 <a href="/images/2016-04-17-Reflections3.png">
 <img src="/images/2016-04-17-Reflections3.png">
-<figcaption>Shaded reflections from sphere on the boxes</figcaption>
 </a>
+<figcaption>Shaded reflections from sphere on the boxes</figcaption>
 </figure>
 <figure>
 <a href="/images/2016-04-17-Reflections4.png">
 <img src="/images/2016-04-17-Reflections4.png">
-<figcaption>Adding reflections from boxes on sphere, and boxes on boxes, but there is Z-fighting between reflections</figcaption>
 </a>
+<figcaption>Adding reflections from boxes on sphere, and boxes on boxes, but there is Z-fighting between reflections</figcaption>
 </figure>
 <figure>
 <a href="/images/2016-04-17-Reflections5.png">
 <img src="/images/2016-04-17-Reflections5.png">
-<figcaption>No more Z-Fighting, but we lost a sphere! I love how you can see the edges of the platform behind the camera in the reflections on the sphere here.</figcaption>
 </a>
+<figcaption>No more Z-Fighting, but we lost a sphere! I love how you can see the edges of the platform behind the camera in the reflections on the sphere here.</figcaption>
 </figure>
 <figure>
 <a href="/images/2016-04-17-Reflections6.png">
 <img src="/images/2016-04-17-Reflections6.png">
-<figcaption>A final image, exhibiting the working reflections-- just not in the whitted scene. Two boxes and one sphere instead of visa versa!</figcaption>
 </a>
+<figcaption>A final image, exhibiting the working reflections-- just not in the whitted scene. Two boxes and one sphere instead of visa versa!</figcaption>
 </figure>
