@@ -3,7 +3,7 @@ layout: post
 title: CSCI-711 Transmission
 ---
 
-I write this post with extreme pride and minor disappointment. It is my displeasure to say I did not fully complete the latest assignment in my Global Illumination class in time. However, I solved all of my problems and in a few days it should be well on it's way! This is what I currently have complete:
+I write this post with extreme pride and minor disappointment. It is my displeasure to say I did not fully complete the latest assignment in my Global Illumination class in time. However, I solved all of my problems and in a few more hours of work it should be well all done! This is what I currently have complete:
 
 <figure>
 <a href="/images/2016-05-01-TransmissionAlmost.png">
