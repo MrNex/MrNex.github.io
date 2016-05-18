@@ -3,6 +3,32 @@ layout: post
 title: CSCI-711 Tone Reproduction
 ---
 
+Update:
+Turns out, nothing was wrong with my Tone Reproduction. I needed to remove ambient light & change the background color so it doesn't skew the average scene luminence as much. Here are some images with those simple changes made to the scene:
+
+<figure>
+<a href="/images/Ward10Final.png">
+<img src="/images/Ward10Final.png">
+</a>
+<figcaption>Ward @ 10 nits</figcaption>
+</figure>
+
+<figure>
+<a href="/images/Ward100Final.png">
+<img src="/images/Ward100Final.png">
+</a>
+<figcaption>Ward @ 100 nits</figcaption>
+</figure>
+
+<figure>
+<a href="/images/Ward1000Final.png">
+<img src="/images/Ward1000Final.png">
+</a>
+<figcaption>Ward @ 1000 nits</figcaption>
+</figure>
+
+
+
 As the semester comes to an end our last assignment is due: Tone Reproduction. For this assignment we had to use both Ward and Reinhard tone reproduction to generate an image with various different lighting conditions. The actual lighting of the scene does not change, but the tone reproduction and maximum illumination of the scene does, changing the way the scene luminences are compressed to RGB values. Unfortunately, due to course work I really had to rush this assignment, which is unfortunate because tone reproduction seems like a vital step in recreating realistic scenes. Furthermore, I believe some very immersive visual effects can be generated in games by using Reinhard tone reproduction and mapping the average luminence of the 8x8 block of pixels in the center of the screen to middle grey. In a dynamic scene this could cause some very interesting percieved changes in a scene by what the user is focused on. But this will all need to take place at some later date, because I just don't have the time this finals week.
 
 Here are the generated images for this milestone:
